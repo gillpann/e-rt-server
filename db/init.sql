@@ -33,19 +33,6 @@ CREATE TABLE IF NOT EXISTS surat (
 );
 
 -- ─────────────────────────────
--- TABEL KAS (keuangan RT)
--- ─────────────────────────────
-CREATE TABLE IF NOT EXISTS kas (
-  id          SERIAL PRIMARY KEY,
-  keterangan  VARCHAR(200) NOT NULL,
-  tipe        VARCHAR(10)  NOT NULL, -- 'masuk' atau 'keluar'
-  nominal     BIGINT       NOT NULL,
-  tanggal     DATE         NOT NULL,
-  created_by  INT REFERENCES users(id),
-  created_at  TIMESTAMP    DEFAULT NOW()
-);
-
--- ─────────────────────────────
 -- SEED: akun admin default
 -- password: admin123 (sudah di-hash dengan bcrypt)
 -- ─────────────────────────────
