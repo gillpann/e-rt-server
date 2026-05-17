@@ -1,10 +1,18 @@
+require("./register");
 require("dotenv").config();
 
 // Pastikan semua env wajib tersedia sebelum server start
-const REQUIRED_ENV = ["JWT_SECRET", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"];
+const REQUIRED_ENV = ["JWT_SECRET"];
 const missingEnv = REQUIRED_ENV.filter((key) => !process.env[key]);
 if (missingEnv.length > 0) {
-  console.error("❌ Environment variable tidak lengkap:", missingEnv.join(", "));
+  console.error("Environment variable tidak lengkap:", missingEnv.join(", "));
+  process.exit(1);
+}
+
+const hasDbUrl = !!process.env.DATABASE_URL;
+const hasDbConfig = process.env.DB_HOST && process.env.DB_NAME && process.env.DB_USER;
+if (!hasDbUrl && !hasDbConfig) {
+  console.error("Konfigurasi database tidak lengkap.");
   process.exit(1);
 }
 
@@ -68,7 +76,7 @@ app.use("/api/surat", suratRoutes);
 app.use("/api/warga", wargaRoutes);
 
 app.get("/", (req, res) => {
-  res.json({ message: "e-RT API berjalan ✅", version: "1.0.0" });
+  res.json({ message: "e-RT API berjalan", version: "1.0.0" });
 });
 
 app.use((req, res) => {
@@ -86,14 +94,14 @@ app.use((err, req, res, next) => {
 
 // ── Start server
 const server = app.listen(PORT, () => {
-  console.log(`🚀 Server berjalan di http://localhost:${PORT}`);
-  console.log(`🌍 Mode: ${process.env.NODE_ENV || "development"}`);
+  console.log(`Server berjalan di http://localhost:${PORT}`);
+  console.log(`Mode: ${process.env.NODE_ENV || "development"}`);
 });
 
 const shutdown = (signal) => {
   console.log(`\n${signal} diterima. Menutup server...`);
   server.close(() => {
-    console.log("✅ Server berhasil ditutup.");
+    console.log("Server berhasil ditutup.");
     process.exit(0);
   });
 };

@@ -1,48 +1,42 @@
--- Jalankan file ini sekali di PostgreSQL untuk membuat semua tabel
--- Bisa lewat psql, pgAdmin, atau TablePlus
-
--- ─────────────────────────────
--- TABEL USERS (warga & admin)
--- ─────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
-  id         SERIAL PRIMARY KEY,
-  nama       VARCHAR(100)        NOT NULL,
-  nik        VARCHAR(16) UNIQUE  NOT NULL,
+  id         INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  nama       VARCHAR(40)   NOT NULL,
+  nik        VARCHAR(16)   NOT NULL UNIQUE,
   no_hp      VARCHAR(15),
   alamat     TEXT,
-  password   VARCHAR(255)        NOT NULL,  -- disimpan sebagai bcrypt hash
-  role       VARCHAR(10)         NOT NULL DEFAULT 'warga', -- 'warga' atau 'admin'
-  status     VARCHAR(10)         NOT NULL DEFAULT 'aktif',  -- 'aktif' atau 'nonaktif'
-  created_at TIMESTAMP           DEFAULT NOW()
+  password   VARCHAR(255)  NOT NULL,
+  role       VARCHAR(10)   NOT NULL DEFAULT 'warga',
+  status     VARCHAR(10)   NOT NULL DEFAULT 'aktif',
+  created_at TIMESTAMP     DEFAULT NOW()
 );
 
--- ─────────────────────────────
--- TABEL SURAT (pengajuan)
--- ─────────────────────────────
 CREATE TABLE IF NOT EXISTS surat (
-  id          SERIAL PRIMARY KEY,
-  kode        VARCHAR(20) UNIQUE NOT NULL,  -- contoh: SRT-2025-001
-  user_id     INT REFERENCES users(id) ON DELETE CASCADE,
-  jenis       VARCHAR(100) NOT NULL,
-  keperluan   VARCHAR(150) NOT NULL,
-  keterangan  TEXT,
-  status      VARCHAR(15)  NOT NULL DEFAULT 'menunggu', -- menunggu/diproses/selesai/ditolak
-  catatan     TEXT,        -- catatan admin jika ditolak
-  created_at  TIMESTAMP    DEFAULT NOW(),
-  updated_at  TIMESTAMP    DEFAULT NOW()
+  id                   INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  kode                 VARCHAR(20)   NOT NULL UNIQUE,
+  user_id              INT           REFERENCES users(id) ON DELETE CASCADE,
+  jenis                VARCHAR(100)  NOT NULL,
+  keperluan            VARCHAR(150)  NOT NULL,
+  keterangan           TEXT,
+  status               VARCHAR(15)   NOT NULL DEFAULT 'menunggu',
+  catatan              TEXT,
+  created_at           TIMESTAMP     DEFAULT NOW(),
+  updated_at           TIMESTAMP     DEFAULT NOW(),
+  nama_pemohon         VARCHAR(40),
+  ttl                  VARCHAR(80),
+  jenis_kelamin        VARCHAR(15),
+  agama                VARCHAR(20),
+  pekerjaan            VARCHAR(50),
+  nama_kepala_keluarga VARCHAR(40),
+  tanggal_selesai      TIMESTAMP
 );
 
--- ─────────────────────────────
--- SEED: akun admin default
--- password: admin123 (sudah di-hash dengan bcrypt)
--- ─────────────────────────────
 INSERT INTO users (nama, nik, no_hp, alamat, password, role)
 VALUES (
   'Pak RT Supratman',
   '0000000000000000',
   '081200000000',
   'Jl. Ketua RT No. 3',
-  '$2b$10$tAU./Doe9DDN0Mn.GUPuD.nGJarsLKzwlA/c0EXRBqvm9qf7JUmOa', -- password: password
+  '$2b$10$tAU./Doe9DDN0Mn.GUPuD.nGJarsLKzwlA/c0EXRBqvm9qf7JUmOa', 
   'admin'
 )
 ON CONFLICT (nik) DO NOTHING;

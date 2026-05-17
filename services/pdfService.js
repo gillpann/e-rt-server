@@ -1,38 +1,18 @@
-const puppeteer = require("puppeteer");
-const { generateSuratHTML } = require("../templates/suratTemplate");
+const { renderToBuffer } = require("@react-pdf/renderer");
+const React   = require("react");
+const path    = require("path");
+const SuratPDF = require("../pdf/SuratPDF");
 
 async function generateSuratPDF(surat) {
-  const html = generateSuratHTML(surat);
+  const logoPath = path.join(__dirname, "../assets/logo-bekasi.png");
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-    ],
+  const element = React.createElement(SuratPDF, {
+    surat,
+    logoPath,
   });
 
-  try {
-    const page = await browser.newPage();
-
-    await page.setContent(html, { waitUntil: "networkidle0" });
-
-    const pdf = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "20mm",
-        bottom: "20mm",
-        left: "25mm",
-        right: "20mm",
-      },
-    });
-
-    return pdf;
-  } finally {
-    await browser.close();
-  }
+  const buffer = await renderToBuffer(element);
+  return buffer;
 }
 
 module.exports = { generateSuratPDF };
