@@ -1,67 +1,27 @@
-const User   = require("../models/User");
-const bcrypt = require("bcryptjs");
-const jwt    = require("jsonwebtoken");
+const authService = require("../services/authService");
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { nik, password } = req.body;
 
-  // Validasi input
   if (!nik || !password)
     return res.status(400).json({ message: "NIK dan password wajib diisi." });
   if (typeof nik !== "string" || nik.trim().length !== 16)
     return res.status(400).json({ message: "NIK harus 16 digit." });
 
   try {
-    const user = await User.findByNik(nik.trim());
-
-    if (!user) {
-      return res.status(401).json({ message: "NIK atau password salah." });
-    }
-
-    if (user.status === "nonaktif") {
-      return res.status(403).json({
-        message: "Akun kamu dinonaktifkan. Hubungi pengurus RT.",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "NIK atau password salah." });
-    }
-
-    const token = jwt.sign(
-      { id: user.id, nama: user.nama, nik: user.nik, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-    );
-
-    res.status(200).json({
-      message: "Login berhasil.",
-      token,
-      user: {
-        id:     user.id,
-        nama:   user.nama,
-        nik:    user.nik,
-        role:   user.role,
-        no_hp:  user.no_hp,
-        alamat: user.alamat,
-      },
-    });
+    const result = await authService.login(nik.trim(), password);
+    res.status(200).json({ message: "Login berhasil.", ...result });
   } catch (err) {
-    console.error("login:", err.message);
-    res.status(500).json({ message: "Terjadi kesalahan server." });
+    next(err);
   }
 };
 
-const getMe = async (req, res) => {
+const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user)
-      return res.status(404).json({ message: "User tidak ditemukan." });
+    const user = await authService.getMe(req.user.id);
     res.status(200).json({ user });
   } catch (err) {
-    console.error("getMe:", err.message);
-    res.status(500).json({ message: "Terjadi kesalahan server." });
+    next(err);
   }
 };
 

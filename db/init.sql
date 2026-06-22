@@ -36,7 +36,7 @@ VALUES (
   '0000000000000000',
   '081200000000',
   'Jl. Ketua RT No. 3',
-  '$2b$10$tAU./Doe9DDN0Mn.GUPuD.nGJarsLKzwlA/c0EXRBqvm9qf7JUmOa', 
+  '$2b$10$tAU./Doe9DDN0Mn.GU', // Hash password 
   'admin'
 )
 ON CONFLICT (nik) DO NOTHING;

@@ -24,6 +24,7 @@ const rateLimit = require("express-rate-limit");
 const authRoutes  = require("./routes/auth");
 const suratRoutes = require("./routes/surat");
 const wargaRoutes = require("./routes/warga");
+const dashboardRoutes = require("./routes/dashboard");
 
 const app  = express();
 app.set("trust proxy", 1);
@@ -75,6 +76,7 @@ app.use(globalLimiter);
 app.use("/api/auth",  authRoutes);
 app.use("/api/surat", suratRoutes);
 app.use("/api/warga", wargaRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/", (req, res) => {
   res.json({ message: "e-RT API berjalan", version: "1.0.0" });
