@@ -196,9 +196,13 @@ const SuratPDF = ({ surat }) => {
     ? `data:image/png;base64,${fs.readFileSync(logoPath).toString("base64")}`
     : null;
 
-  const tanggal = new Date().toLocaleDateString("id-ID", {
-    day: "numeric", month: "long", year: "numeric",
-  });
+  const tanggal = surat.tanggal_selesai
+  ? new Date(surat.tanggal_selesai).toLocaleDateString("id-ID", {
+      day: "numeric", month: "long", year: "numeric",
+    })
+  : new Date().toLocaleDateString("id-ID", {
+      day: "numeric", month: "long", year: "numeric",
+    });
 
   const alamatLengkap = surat.alamat
     ? `Perumahan Taman Kintamani ${surat.alamat}, RT. 03 RW. 08 Ds. Jejalen Jaya, Kec. Tambun Utara`
