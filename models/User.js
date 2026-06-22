@@ -14,12 +14,55 @@ const User = {
     return res.rows[0] || null;
   },
 
-  findAllWarga: async () => {
-    const res = await pool.query(
+  findAllWarga: async ({ page = 1, limit = 10, search = "", status = "" } = {}) => {
+    const offset = (page - 1) * limit;
+    const params = [];
+    const conditions = ["role = 'warga'"];
+
+    if (search) {
+      params.push(`%${search}%`);
+      const idx = params.length;
+      conditions.push(`(nama ILIKE $${idx} OR nik ILIKE $${idx})`);
+    }
+
+    if (status) {
+      params.push(status);
+      conditions.push(`status = $${params.length}`);
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    params.push(limit, offset);
+    const dataRes = await pool.query(
       `SELECT id, nama, nik, no_hp, alamat, status, created_at
-       FROM users WHERE role = 'warga' ORDER BY created_at DESC`
+       FROM users ${whereClause}
+       ORDER BY created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
     );
-    return res.rows;
+
+    const countParams = params.slice(0, params.length - 2);
+    const countRes = await pool.query(
+      `SELECT COUNT(*) FROM users ${whereClause}`,
+      countParams
+    );
+
+    return {
+      rows:  dataRes.rows,
+      total: parseInt(countRes.rows[0].count),
+    };
+  },
+
+  countByStatus: async () => {
+    const res = await pool.query(
+      `SELECT status, COUNT(*) as count FROM users WHERE role = 'warga' GROUP BY status`
+    );
+    const result = { total: 0, aktif: 0, nonaktif: 0 };
+    res.rows.forEach(r => {
+      result[r.status] = parseInt(r.count);
+      result.total += parseInt(r.count);
+    });
+    return result;
   },
 
   nikExists: async (nik, excludeId = null) => {
@@ -32,7 +75,7 @@ const User = {
   create: async ({ nama, nik, no_hp, alamat, hashedPassword, status }) => {
     const res = await pool.query(
       `INSERT INTO users (nama, nik, no_hp, alamat, password, role, status)
-       VALUES ($1, $2, $3, $4, $5, 'warga', $6)
+       VALUES ($1,$2,$3,$4,$5,'warga',$6)
        RETURNING id, nama, nik, no_hp, alamat, status, created_at`,
       [nama, nik, no_hp || null, alamat || null, hashedPassword, status || "aktif"]
     );
