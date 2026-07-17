@@ -1,7 +1,7 @@
 const Surat = require("../models/Surat");
 const { generateSuratPDF } = require("./pdfService");
 
-const VALID_STATUS = ["menunggu", "diproses", "selesai"];
+const VALID_STATUS = ["menunggu", "diproses", "selesai", "sudah_diambil"];
 
 const generateKodeSurat = async () => {
   const year = new Date().getFullYear();

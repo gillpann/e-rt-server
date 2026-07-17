@@ -100,7 +100,7 @@ const Surat = {
     const res = await pool.query(
       `SELECT status, COUNT(*) as count FROM surat GROUP BY status`
     );
-    const result = { menunggu: 0, diproses: 0, selesai: 0 };
+    const result = { menunggu: 0, diproses: 0, selesai: 0, sudah_diambil: 0 };
     res.rows.forEach(r => { result[r.status] = parseInt(r.count); });
     return result;
   },
